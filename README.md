@@ -1,130 +1,500 @@
+# User Session Management / Kullanıcı Oturum Yönetimi
 
-# User Session Management
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Redis](https://img.shields.io/badge/Redis-Memurai-red.svg)](https://www.memurai.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
 
-This project is a Spring Boot-based application for managing user sessions with Redis integration. It provides features for user registration, login, and logout, with session management handled by Redis for performance and scalability.
+---
+
+## 📋 Table of Contents / İçindekiler
+
+- [English](#english)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Technologies](#technologies)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running the Application](#running-the-application)
+  - [API Endpoints](#api-endpoints)
+  - [Testing](#testing)
+  - [Troubleshooting](#troubleshooting)
+- [Türkçe](#türkçe)
+  - [Genel Bakış](#genel-bakış)
+  - [Özellikler](#özellikler)
+  - [Teknolojiler](#teknolojiler)
+  - [Gereksinimler](#gereksinimler)
+  - [Kurulum](#kurulum)
+  - [Yapılandırma](#yapılandırma)
+  - [Uygulamayı Çalıştırma](#uygulamayı-çalıştırma)
+  - [API Endpoint'leri](#api-endpointleri)
+  - [Test Etme](#test-etme)
+  - [Sorun Giderme](#sorun-giderme)
+
+---
+
+# English
+
+## Overview
+
+This is a comprehensive Spring Boot-based application for managing user sessions with Redis (Memurai) integration. It provides secure user registration, authentication, and session management with automatic session expiration.
 
 ## Features
 
-- **User Registration**: Register new users with a secure password hashing mechanism.
-- **User Login**: Authenticate users and create a session that is stored in Redis.
-- **Session Management**: Manage user sessions with Redis, including automatic session expiration after 2 minutes of inactivity.
-- **User Logout**: Securely log out users and delete their session from Redis.
+- ✅ **User Registration**: Secure user registration with password hashing
+- ✅ **User Authentication**: Email and password-based login
+- ✅ **Session Management**: Redis (Memurai) based session storage with 2-minute TTL
+- ✅ **User Logout**: Secure session termination
+- ✅ **Input Validation**: Comprehensive request validation
+- ✅ **Error Handling**: Global exception handling with detailed error messages
+- ✅ **CORS Support**: Cross-origin resource sharing enabled
+- ✅ **Internationalization**: English and Turkish language support
+- ✅ **Modern UI**: Responsive HTML test page
 
-## Technologies Used
+## Technologies
 
-- **Spring Boot**: The foundation of the application.
-- **Redis**: Used for session management.
-- **Spring Security**: Provides authentication and security mechanisms.
-- **Hibernate**: ORM tool used for database interactions.
-- **MySQL**: The relational database management system used to store user data.
+- **Spring Boot 3.3.2**: Application framework
+- **Spring Security**: Authentication and security
+- **Spring Data JPA**: Database operations
+- **Spring Data Redis**: Redis integration
+- **MySQL 8.0**: Relational database
+- **Redis (Memurai)**: In-memory session store
+- **Lombok**: Code generation
+- **Jakarta Validation**: Input validation
+- **Java 17**: Programming language
 
-## Project Setup
+## Prerequisites
 
-### Configuration
-The application requires minimal configuration as most settings are predefined in the `application.properties` file. However, you may need to update the following configurations depending on your environment:
+Before you begin, ensure you have the following installed:
 
-```properties
-# Redis configuration
-spring.redis.host=localhost
-spring.redis.port=6379
+- **Java 17** or higher
+- **Maven 3.6+**
+- **MySQL 8.0** (running on localhost:3306)
+- **Memurai** (Redis for Windows) - [Download here](https://www.memurai.com/get-memurai)
 
-# Hibernate configurations
-spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=update
-```
+## Installation
 
-### Database
-While Redis is used for session management, the user data is stored in a relational database. You can configure the database connection details in the `application.properties` file:
-
-```properties
-# Database configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/userdb
-spring.datasource.username=root
-spring.datasource.password=yourpassword
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-```
-
-## Security
-
-The application uses Spring Security for authentication and session management. Passwords are securely hashed using BCrypt before being stored in the database. 
-
-### Password Encryption
-The project uses Spring Security's BCryptPasswordEncoder for encrypting user passwords. This ensures that stored passwords are securely hashed.
-
-### Session Timeout
-Sessions are automatically invalidated after 2 minutes of inactivity. This helps prevent unauthorized access if a user forgets to log out.
-
-## Deployment
-
-### Docker
-You can deploy the application using Docker for easier management and scalability. Below is a simple `Dockerfile` to get you started:
-
-```dockerfile
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-alpine
-
-# Set the working directory
-WORKDIR /app
-
-# Copy the application JAR file to the container
-COPY target/user-session-management-0.0.1-SNAPSHOT.jar /app/user-session-management.jar
-
-# Expose the port the app runs on
-EXPOSE 8080
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "user-session-management.jar"]
-```
-
-You can build and run the Docker image with the following commands:
+### 1. Clone the Repository
 
 ```bash
-docker build -t user-session-management .
-docker run -p 8080:8080 user-session-management
+git clone https://github.com/your-username/user-session-management.git
+cd user-session-management
+```
+
+### 2. Install Memurai (Redis for Windows)
+
+1. Download Memurai from [https://www.memurai.com/get-memurai](https://www.memurai.com/get-memurai)
+2. Run the installer and follow the setup wizard
+3. Memurai will start automatically as a Windows service
+4. Default port: **6379**
+
+### 3. Create MySQL Database
+
+```sql
+CREATE DATABASE IF NOT EXISTS user_session_management;
+```
+
+Or use MySQL command line:
+
+```bash
+mysql -u root -p12345 -e "CREATE DATABASE IF NOT EXISTS user_session_management;"
+```
+
+### 4. Configure Application
+
+Edit `src/main/resources/application.properties`:
+
+```properties
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/user_session_management?useSSL=false&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=12345
+
+# Redis (Memurai) Configuration
+spring.redis.host=localhost
+spring.redis.port=6379
+```
+
+## Running the Application
+
+### Using Maven
+
+```bash
+mvn clean install
+mvn spring-boot:run
+```
+
+### Using IDE
+
+Run the `UserSessionManagementApplication` class directly from your IDE.
+
+The application will start on **http://localhost:8080**
+
+## API Endpoints
+
+### Register User
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+### Login
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Login Success",
+  "sessionId": "session:1",
+  "userId": 1
+}
+```
+
+### Logout
+```http
+POST /api/auth/logout
+Content-Type: application/json
+
+{
+  "userId": 1
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Logout Success"
+}
+```
+
+## Testing
+
+### Web Interface
+
+1. Start the application
+2. Open your browser and navigate to: **http://localhost:8080**
+3. Use the modern HTML interface to test:
+   - User registration
+   - User login
+   - User logout
+   - Session management
+
+### Using cURL
+
+```bash
+# Register
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com","password":"test123"}'
+
+# Login
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123"}'
+
+# Logout
+curl -X POST http://localhost:8080/api/auth/logout \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1}'
 ```
 
 ## Troubleshooting
 
-### Common Issues
-1. **Redis Connection Issues**:
-    - Ensure that Redis is running and accessible on the configured host and port.
-    - Check firewall settings if Redis is hosted remotely.
-    
-2. **Session Expiration**:
-    - Ensure that the Redis TTL (time-to-live) is correctly set to 2 minutes.
+### Redis Connection Issues
 
-3. **Database Connection Issues**:
-    - Double-check the database connection URL, username, and password.
-    - Ensure that the MySQL service is running.
+**Problem:** `Unable to connect to Redis`
 
-### Logs
-Application logs are available in the console output by default. You can configure log levels in the `application.properties` file:
+**Solution:**
+1. Ensure Memurai service is running:
+   ```powershell
+   Get-Service -Name "*memurai*"
+   ```
+2. Check if Memurai is listening on port 6379
+3. Verify Redis configuration in `application.properties`
+
+### Database Connection Issues
+
+**Problem:** `Cannot connect to MySQL`
+
+**Solution:**
+1. Ensure MySQL service is running
+2. Verify database exists: `user_session_management`
+3. Check username and password in `application.properties`
+4. Ensure MySQL is accessible on `localhost:3306`
+
+### Port Already in Use
+
+**Problem:** `Port 8080 is already in use`
+
+**Solution:**
+Change the port in `application.properties`:
+```properties
+server.port=8081
+```
+
+---
+
+# Türkçe
+
+## Genel Bakış
+
+Bu, Redis (Memurai) entegrasyonu ile kullanıcı oturum yönetimi için kapsamlı bir Spring Boot tabanlı uygulamadır. Otomatik oturum sona erme ile güvenli kullanıcı kaydı, kimlik doğrulama ve oturum yönetimi sağlar.
+
+## Özellikler
+
+- ✅ **Kullanıcı Kaydı**: Şifre hashleme ile güvenli kullanıcı kaydı
+- ✅ **Kullanıcı Kimlik Doğrulama**: E-posta ve şifre tabanlı giriş
+- ✅ **Oturum Yönetimi**: 2 dakika TTL ile Redis (Memurai) tabanlı oturum depolama
+- ✅ **Kullanıcı Çıkışı**: Güvenli oturum sonlandırma
+- ✅ **Girdi Doğrulama**: Kapsamlı istek doğrulama
+- ✅ **Hata Yönetimi**: Detaylı hata mesajları ile global exception handling
+- ✅ **CORS Desteği**: Cross-origin resource sharing etkin
+- ✅ **Çoklu Dil Desteği**: İngilizce ve Türkçe dil desteği
+- ✅ **Modern Arayüz**: Responsive HTML test sayfası
+
+## Teknolojiler
+
+- **Spring Boot 3.3.2**: Uygulama framework'ü
+- **Spring Security**: Kimlik doğrulama ve güvenlik
+- **Spring Data JPA**: Veritabanı işlemleri
+- **Spring Data Redis**: Redis entegrasyonu
+- **MySQL 8.0**: İlişkisel veritabanı
+- **Redis (Memurai)**: Bellek içi oturum deposu
+- **Lombok**: Kod üretimi
+- **Jakarta Validation**: Girdi doğrulama
+- **Java 17**: Programlama dili
+
+## Gereksinimler
+
+Başlamadan önce aşağıdakilerin kurulu olduğundan emin olun:
+
+- **Java 17** veya üzeri
+- **Maven 3.6+**
+- **MySQL 8.0** (localhost:3306'da çalışıyor olmalı)
+- **Memurai** (Windows için Redis) - [Buradan indirin](https://www.memurai.com/get-memurai)
+
+## Kurulum
+
+### 1. Repository'yi Klonlayın
+
+```bash
+git clone https://github.com/your-username/user-session-management.git
+cd user-session-management
+```
+
+### 2. Memurai'yi Kurun (Windows için Redis)
+
+1. Memurai'yi [https://www.memurai.com/get-memurai](https://www.memurai.com/get-memurai) adresinden indirin
+2. Kurulum dosyasını çalıştırın ve sihirbazı takip edin
+3. Memurai otomatik olarak Windows servisi olarak başlayacaktır
+4. Varsayılan port: **6379**
+
+### 3. MySQL Veritabanı Oluşturun
+
+```sql
+CREATE DATABASE IF NOT EXISTS user_session_management;
+```
+
+Veya MySQL komut satırını kullanın:
+
+```bash
+mysql -u root -p12345 -e "CREATE DATABASE IF NOT EXISTS user_session_management;"
+```
+
+### 4. Uygulamayı Yapılandırın
+
+`src/main/resources/application.properties` dosyasını düzenleyin:
 
 ```properties
-# Logging configuration
-logging.level.org.springframework=INFO
-logging.level.com.companyname=DEBUG
+# Veritabanı Yapılandırması
+spring.datasource.url=jdbc:mysql://localhost:3306/user_session_management?useSSL=false&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=12345
+
+# Redis (Memurai) Yapılandırması
+spring.redis.host=localhost
+spring.redis.port=6379
 ```
 
-## Documentation
+## Uygulamayı Çalıştırma
 
-### API Documentation
-You can generate API documentation using tools like Swagger. Integrating Swagger into this project can provide a user-friendly interface for testing and interacting with the API.
+### Maven Kullanarak
 
-To integrate Swagger, add the following dependencies to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>io.springfox</groupId>
-    <artifactId>springfox-boot-starter</artifactId>
-    <version>3.0.0</version>
-</dependency>
+```bash
+mvn clean install
+mvn spring-boot:run
 ```
 
-Once integrated, you can access the Swagger UI at `http://localhost:8080/swagger-ui/`.
+### IDE Kullanarak
 
-## Conclusion
+IDE'nizden `UserSessionManagementApplication` sınıfını doğrudan çalıştırın.
 
-This project serves as a robust foundation for managing user sessions in a Spring Boot application using Redis. With a focus on security and scalability, this system can be extended and adapted to meet various use cases in real-world applications.
+Uygulama **http://localhost:8080** adresinde başlayacaktır.
 
-For any questions, issues, or contributions, please open an issue or submit a pull request on the [GitHub repository](https://github.com/unknown1fsh/user-session-management).
+## API Endpoint'leri
+
+### Kullanıcı Kaydı
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ahmet Yılmaz",
+  "email": "ahmet@example.com",
+  "password": "sifre123"
+}
+```
+
+**Yanıt:**
+```json
+{
+  "id": 1,
+  "name": "Ahmet Yılmaz",
+  "email": "ahmet@example.com"
+}
+```
+
+### Giriş
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ahmet@example.com",
+  "password": "sifre123"
+}
+```
+
+**Yanıt:**
+```json
+{
+  "message": "Login Success",
+  "sessionId": "session:1",
+  "userId": 1
+}
+```
+
+### Çıkış
+```http
+POST /api/auth/logout
+Content-Type: application/json
+
+{
+  "userId": 1
+}
+```
+
+**Yanıt:**
+```json
+{
+  "message": "Logout Success"
+}
+```
+
+## Test Etme
+
+### Web Arayüzü
+
+1. Uygulamayı başlatın
+2. Tarayıcınızda şu adrese gidin: **http://localhost:8080**
+3. Modern HTML arayüzünü kullanarak test edin:
+   - Kullanıcı kaydı
+   - Kullanıcı girişi
+   - Kullanıcı çıkışı
+   - Oturum yönetimi
+
+### cURL Kullanarak
+
+```bash
+# Kayıt
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Kullanıcı","email":"test@example.com","password":"test123"}'
+
+# Giriş
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123"}'
+
+# Çıkış
+curl -X POST http://localhost:8080/api/auth/logout \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1}'
+```
+
+## Sorun Giderme
+
+### Redis Bağlantı Sorunları
+
+**Sorun:** `Unable to connect to Redis`
+
+**Çözüm:**
+1. Memurai servisinin çalıştığından emin olun:
+   ```powershell
+   Get-Service -Name "*memurai*"
+   ```
+2. Memurai'nin 6379 portunda dinlediğini kontrol edin
+3. `application.properties` dosyasındaki Redis yapılandırmasını doğrulayın
+
+### Veritabanı Bağlantı Sorunları
+
+**Sorun:** `Cannot connect to MySQL`
+
+**Çözüm:**
+1. MySQL servisinin çalıştığından emin olun
+2. Veritabanının var olduğunu doğrulayın: `user_session_management`
+3. `application.properties` dosyasındaki kullanıcı adı ve şifreyi kontrol edin
+4. MySQL'in `localhost:3306` adresinde erişilebilir olduğundan emin olun
+
+### Port Zaten Kullanımda
+
+**Sorun:** `Port 8080 is already in use`
+
+**Çözüm:**
+`application.properties` dosyasında portu değiştirin:
+```properties
+server.port=8081
+```
+
+---
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/user-session-management/issues).
+
+## 👤 Author
+
+**Your Name**
+- GitHub: [@your-username](https://github.com/your-username)
+
+---
+
+**Made with ❤️ using Spring Boot**

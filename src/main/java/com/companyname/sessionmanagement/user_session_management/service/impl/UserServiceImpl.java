@@ -34,10 +34,10 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
             .filter(user -> passwordEncoder.matches(password, user.getPassword()))
             .map(user -> {
-                // Oturum verisini Redis'e kaydetme ve 2 dakika sonra sona ermesi için TTL ayarlama
+                // Oturum verisini Redis (Memurai)'ye kaydetme ve 2 dakika sonra sona ermesi için TTL ayarlama
                 String sessionId = "session:" + user.getId();
                 redisTemplate.opsForValue().set(sessionId, user, 2, TimeUnit.MINUTES);
-                return new LoginResponse("Login Success");
+                return new LoginResponse("Login Success", sessionId, user.getId());
             })
             .orElse(new LoginResponse("Login Failed: Wrong username or password"));
     }

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Session Management - Test Sayfası</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .session-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .session-info.active {
+            display: block;
+        }
+
+        .session-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .session-info p {
+            color: #666;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 User Session Management</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('register')">Kayıt Ol</button>
+            <button class="tab" onclick="switchTab('login')">Giriş Yap</button>
+            <button class="tab" onclick="switchTab('logout')">Çıkış Yap</button>
+        </div>
+
+        <!-- Register Tab -->
+        <div id="register" class="tab-content active">
+            <form onsubmit="register(event)">
+                <div class="form-group">
+                    <label for="reg-name">Ad Soyad</label>
+                    <input type="text" id="reg-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">E-posta</label>
+                    <input type="email" id="reg-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Şifre (En az 6 karakter)</label>
+                    <input type="password" id="reg-password" name="password" required minlength="6">
+                </div>
+                <button type="submit">Kayıt Ol</button>
+                <div class="loading" id="register-loading">
+                    <div class="spinner"></div>
+                </div>
+                <div class="message" id="register-message"></div>
+            </form>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="login" class="tab-content">
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="login-email">E-posta</label>
+                    <input type="email" id="login-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Şifre</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <button type="submit">Giriş Yap</button>
+                <div class="loading" id="login-loading">
+                    <div class="spinner"></div>
+                </div>
+                <div class="message" id="login-message"></div>
+                <div class="session-info" id="session-info">
+                    <h3>Oturum Bilgileri</h3>
+                    <p><strong>Session ID:</strong> <span id="session-id"></span></p>
+                    <p><strong>User ID:</strong> <span id="user-id"></span></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Logout Tab -->
+        <div id="logout" class="tab-content">
+            <form onsubmit="logout(event)">
+                <div class="form-group">
+                    <label for="logout-user-id">User ID</label>
+                    <input type="number" id="logout-user-id" name="userId" required placeholder="Giriş yaptıktan sonra otomatik doldurulur">
+                </div>
+                <button type="submit">Çıkış Yap</button>
+                <div class="loading" id="logout-loading">
+                    <div class="spinner"></div>
+                </div>
+                <div class="message" id="logout-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/auth';
+        let currentSessionId = null;
+        let currentUserId = null;
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showMessage(elementId, message, isSuccess) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.textContent = message;
+            messageEl.className = 'message ' + (isSuccess ? 'success' : 'error');
+        }
+
+        function showLoading(elementId, show) {
+            const loadingEl = document.getElementById(elementId);
+            if (show) {
+                loadingEl.classList.add('active');
+            } else {
+                loadingEl.classList.remove('active');
+            }
+        }
+
+        async function register(event) {
+            event.preventDefault();
+            showLoading('register-loading', true);
+            showMessage('register-message', '', false);
+
+            const formData = {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-password').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                showLoading('register-loading', false);
+
+                if (response.ok) {
+                    showMessage('register-message', `Başarılı! Kullanıcı oluşturuldu. ID: ${data.id}`, true);
+                    document.getElementById('register').querySelector('form').reset();
+                } else {
+                    const errorMsg = data.message || JSON.stringify(data);
+                    showMessage('register-message', `Hata: ${errorMsg}`, false);
+                }
+            } catch (error) {
+                showLoading('register-loading', false);
+                showMessage('register-message', `Hata: ${error.message}`, false);
+            }
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            showLoading('login-loading', true);
+            showMessage('login-message', '', false);
+
+            const formData = {
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                showLoading('login-loading', false);
+
+                if (response.ok && data.message === 'Login Success') {
+                    showMessage('login-message', 'Giriş başarılı!', true);
+                    currentSessionId = data.sessionId;
+                    currentUserId = data.userId;
+                    
+                    // Show session info
+                    document.getElementById('session-id').textContent = currentSessionId || 'N/A';
+                    document.getElementById('user-id').textContent = currentUserId || 'N/A';
+                    document.getElementById('session-info').classList.add('active');
+                    
+                    // Update logout form
+                    document.getElementById('logout-user-id').value = currentUserId || '';
+                } else {
+                    showMessage('login-message', `Hata: ${data.message || 'Giriş başarısız'}`, false);
+                }
+            } catch (error) {
+                showLoading('login-loading', false);
+                showMessage('login-message', `Hata: ${error.message}`, false);
+            }
+        }
+
+        async function logout(event) {
+            event.preventDefault();
+            showLoading('logout-loading', true);
+            showMessage('logout-message', '', false);
+
+            const userId = document.getElementById('logout-user-id').value;
+
+            if (!userId) {
+                showLoading('logout-loading', false);
+                showMessage('logout-message', 'Lütfen User ID girin', false);
+                return;
+            }
+
+            const formData = {
+                userId: parseInt(userId)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                showLoading('logout-loading', false);
+
+                if (response.ok && data.message === 'Logout Success') {
+                    showMessage('logout-message', 'Çıkış başarılı!', true);
+                    currentSessionId = null;
+                    currentUserId = null;
+                    document.getElementById('session-info').classList.remove('active');
+                    document.getElementById('logout-user-id').value = '';
+                } else {
+                    showMessage('logout-message', `Hata: ${data.message || 'Çıkış başarısız'}`, false);
+                }
+            } catch (error) {
+                showLoading('logout-loading', false);
+                showMessage('logout-message', `Hata: ${error.message}`, false);
+            }
+        }
+    </script>
+</body>
+</html>
+
